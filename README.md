@@ -12,8 +12,13 @@ Self-help software for people handling civil cases without a lawyer. It gives pe
 
 - `prototype/index.html` is a clickable, single-file prototype. It covers crash intake, the prescription deadline (La. Civ. Code art. 3493.1), the damages tracker, the demand letter and choosing a court. Open it in a browser to try it.
 
+- `app/` is the real web app (Next.js, TypeScript, Tailwind).
+  - `app/src/lib/legal/` holds the legal logic: the Louisiana car accident rules pack (every rule cited and marked checked or to verify), the filing deadline calculator and the claim value calculator.
+  - Run it: `cd app && npm install && npm run dev`, then open http://localhost:3000.
+  - Test it: `cd app && npm test`.
+
 ## Next
 
-The production app (Next.js, TypeScript, Supabase) will add the tested deadline engine, the Louisiana jurisdiction pack with cited rules and official forms, petition drafting, and reminders.
+Port the full prototype flow into the app (intake, damages, demand letter, court choice), add Louisiana court holidays to the deadline calculator, then accounts and reminders.
 
 Rules marked "To verify" in the prototype still need to be checked against the official Louisiana text.
