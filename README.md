@@ -4,7 +4,7 @@ Self-help software for people handling civil cases without a lawyer. It gives pe
 
 ## First focus
 
-- **Case type:** car accident claims (the injured person's insurance claim, then small claims or district court)
+- **Case types:** car accident claims (the injured person's insurance claim, then small claims or district court), and medical malpractice (the medical review panel, then district court)
 - **State:** Louisiana
 - **Platform:** web app first
 
@@ -14,6 +14,7 @@ Self-help software for people handling civil cases without a lawyer. It gives pe
 
 - `app/` is the real web app (Next.js, TypeScript, Tailwind).
   - `app/src/lib/legal/` holds the legal logic: the Louisiana car accident rules pack (every rule cited and marked checked or to verify), the filing deadline calculator and the claim value calculator.
+  - `/medical-malpractice` walks a patient through a Louisiana malpractice claim: the 1-year/3-year deadline (R.S. 9:5628) and how a panel request stops it, checking whether the provider is enrolled with the Patient's Compensation Fund, getting records, a panel request letter with every item R.S. 40:1231.8 requires, the fee and panel dates, finding a qualified expert (R.S. 9:2794), and the $500,000 cap (R.S. 40:1231.2).
   - Run it: `cd app && npm install && npm run dev`, then open http://localhost:3000.
   - Test it: `cd app && npm test`.
 
