@@ -1,0 +1,435 @@
+<title>Pro Se Crash Claim</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky deadline bar on top, step list on the left, one working panel on the right; stacks on phones. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #17201d;
+  --muted: #5b6863;
+  --line: #d5dcd9;
+  --accent: #0f6b5c;
+  --accent-soft: #e2f0ec;
+  --good: #1d7a3e;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --crit: #b3261e;
+  --crit-soft: #fbe6e4;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111816; --surface: #18211e; --ink: #e6ece9; --muted: #9aa8a2; --line: #2b3733;
+  --accent: #4cc1a8; --accent-soft: #173a33; --good: #5ccf85; --warn: #e6a94a; --warn-soft: #3a2c14;
+  --crit: #f08a82; --crit-soft: #3d1c1a; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #111816; --surface: #18211e; --ink: #e6ece9; --muted: #9aa8a2; --line: #2b3733;
+  --accent: #4cc1a8; --accent-soft: #173a33; --good: #5ccf85; --warn: #e6a94a; --warn-soft: #3a2c14;
+  --crit: #f08a82; --crit-soft: #3d1c1a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font-body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-block: 12px; }
+.brand { font: 800 18px/1.1 var(--font-display); letter-spacing: -0.01em; }
+.brand small { display: block; font: 500 12px var(--font-body); color: var(--muted); letter-spacing: 0.02em; }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; font: 600 13px var(--font-body); background: var(--accent-soft); color: var(--ink); }
+.pill b { font-family: var(--font-mono); font-weight: 500; }
+.pill.warn { background: var(--warn-soft); }
+.pill.crit { background: var(--crit-soft); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+.pill.warn .dot { background: var(--warn); }
+.pill.crit .dot { background: var(--crit); }
+.example { padding-block: 10px; font-size: 13px; color: var(--muted); }
+.layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 24px; padding-block: 8px 48px; }
+@media (max-width: 760px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+nav.steps { display: flex; flex-direction: column; gap: 4px; align-self: start; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 76px); }
+@media (max-width: 760px) { nav.steps { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 4px; } }
+nav.steps button { all: unset; cursor: pointer; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 8px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+nav.steps button .n { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font: 500 12px var(--font-mono); }
+nav.steps button[aria-current="step"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+nav.steps button[aria-current="step"] .n { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+nav.steps button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+main section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+h1 { font: 700 26px/1.2 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h2 { font: 700 17px/1.3 var(--font-display); margin: 0; }
+p { margin: 0; max-width: 66ch; }
+.lead { color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+label.f { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; }
+label.f span.h { font-weight: 400; color: var(--muted); font-size: 13px; }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; width: 100%; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+textarea { min-height: 420px; font: 14px/1.6 var(--font-mono); resize: vertical; }
+.callout { border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: var(--accent-soft); }
+.callout.warn { background: var(--warn-soft); }
+.callout.crit { background: var(--crit-soft); }
+.callout strong { font-family: var(--font-display); }
+.big { font: 800 34px/1.1 var(--font-display); letter-spacing: -0.02em; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.cite { display: inline-flex; gap: 6px; align-items: center; font: 500 12px var(--font-mono); color: var(--muted); }
+.cite a { color: var(--accent); }
+.tag { font: 600 11px var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; }
+.tag.ok { background: var(--accent-soft); color: var(--good); }
+.tag.check { background: var(--warn-soft); color: var(--warn); }
+.tablebox { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font: 600 12px var(--font-body); letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+td.num, th.num { text-align: right; }
+td input, td select { padding: 6px 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button.btn { font: 600 14px var(--font-body); padding: 9px 16px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); cursor: pointer; }
+button.btn.ghost { background: transparent; color: var(--accent); }
+button.btn:focus-visible, button.x:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+button.x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 8px; }
+.totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.totals div { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.totals .k { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.totals .v { font: 700 20px var(--font-mono); }
+.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+.timeline li { display: grid; grid-template-columns: 112px 1fr; gap: 14px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+.timeline li:last-child { border-bottom: 0; }
+.timeline .d { font: 500 13px var(--font-mono); color: var(--muted); }
+.timeline li.key .d { color: var(--crit); font-weight: 600; }
+.choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.choice article { border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.choice article.fit { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.choice ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.nextrow { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 16px; }
+.toast { font-size: 13px; color: var(--good); font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) { main section { animation: rise .18s ease-out; } @keyframes rise { from { transform: translateY(4px); } to { transform: none; } } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Crash Claim Builder<small>Louisiana car accident claims, self-represented</small></div>
+    <div id="deadlinePill" class="pill"><span class="dot"></span><span id="deadlinePillText">Deadline</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="example">Prototype. The case below is a filled-in example so you can see how it works. Change any answer and every step updates. Your answers stay in this browser only.</p>
+  <div class="layout">
+    <nav class="steps" aria-label="Steps">
+      <button data-step="intake"><span class="n">1</span>What happened</button>
+      <button data-step="deadline"><span class="n">2</span>Your deadline</button>
+      <button data-step="damages"><span class="n">3</span>Your damages</button>
+      <button data-step="letter"><span class="n">4</span>Demand letter</button>
+      <button data-step="court"><span class="n">5</span>If they won't pay</button>
+    </nav>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+const LA_RULES = {
+  prescription: { cite: "La. Civ. Code art. 3493.1", url: "https://www.legis.la.gov/Legis/Law.aspx?d=1386443", verified: true },
+  computation: { cite: "La. Civ. Code art. 3454", verified: false },
+  interruption: { cite: "La. Civ. Code art. 3462", verified: false },
+  fault: { cite: "La. Civ. Code art. 2323 (Acts 2025, No. 15)", url: "https://legis.la.gov/legis/law.aspx?d=109387", verified: true },
+  noPayNoPlay: { cite: "La. R.S. 32:866 (HB 434, 2025)", url: "https://www.morrisbart.com/?p=55052", verified: false },
+  smallClaims: { cite: "La. R.S. 13:5202", url: "https://legis.la.gov/legis/Law.aspx?d=77961", verified: true }
+};
+
+const EXAMPLE = {
+  name: "Jordan Example",
+  crashDate: "2026-03-14",
+  parish: "East Baton Rouge",
+  location: "Florida Blvd at Airline Hwy",
+  otherDriver: "R. Sample",
+  otherInsurer: "Example Mutual Insurance",
+  claimNo: "EM-0000000",
+  injured: "yes",
+  policeReport: "yes",
+  myInsured: "yes",
+  myFault: 0,
+  story: "I was stopped at a red light when the other driver rear-ended my car.",
+  items: [
+    { kind: "Medical", desc: "Emergency room visit", amount: 2840 },
+    { kind: "Medical", desc: "Physical therapy, 8 sessions", amount: 1360 },
+    { kind: "Lost wages", desc: "6 missed work days", amount: 1150 },
+    { kind: "Property", desc: "Repair estimate, rear bumper and trunk", amount: 3925 },
+    { kind: "Other", desc: "Rental car, 9 days", amount: 405 }
+  ],
+  painMultiplier: 2
+};
+
+let state = load() || structuredClone(EXAMPLE);
+let step = (location.hash || "").slice(1) || "intake";
+
+function load() { try { const s = localStorage.getItem("crashClaim"); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+function save() { try { localStorage.setItem("crashClaim", JSON.stringify(state)); } catch (e) {} }
+
+const $ = s => document.querySelector(s);
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const parseDate = s => { const [y, m, d] = s.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const fmt = d => d.toLocaleDateString("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric", year: "numeric" });
+const addDays = (d, n) => new Date(d.getTime() + n * 864e5);
+const today = () => { const t = new Date(); return new Date(Date.UTC(t.getFullYear(), t.getMonth(), t.getDate())); };
+
+function cite(key) {
+  const r = LA_RULES[key];
+  const name = r.url ? `<a href="${r.url}" target="_blank" rel="noopener">${esc(r.cite)}</a>` : esc(r.cite);
+  return `<span class="cite">${name} <span class="tag ${r.verified ? "ok" : "check"}">${r.verified ? "Checked" : "To verify"}</span></span>`;
+}
+
+// Prescription: 2 years for crashes on/after 2024-07-01, 1 year before. Last day on a weekend rolls to Monday.
+function deadline() {
+  if (!state.crashDate) return null;
+  const crash = parseDate(state.crashDate);
+  const years = crash >= parseDate("2024-07-01") ? 2 : 1;
+  let last = new Date(Date.UTC(crash.getUTCFullYear() + years, crash.getUTCMonth(), crash.getUTCDate()));
+  let rolled = false;
+  while ([0, 6].includes(last.getUTCDay())) { last = addDays(last, 1); rolled = true; }
+  const daysLeft = Math.round((last - today()) / 864e5);
+  return { crash, years, last, rolled, daysLeft };
+}
+
+function faultRule() {
+  const f = Number(state.myFault) || 0;
+  const modified = state.crashDate && parseDate(state.crashDate) >= parseDate("2026-01-01");
+  const barred = modified && f >= 51;
+  return { f, modified, barred, share: barred ? 0 : (100 - f) / 100 };
+}
+
+function totals() {
+  const sum = k => state.items.filter(i => i.kind === k).reduce((a, i) => a + (Number(i.amount) || 0), 0);
+  const medical = sum("Medical"), wages = sum("Lost wages"), property = sum("Property"), other = sum("Other");
+  const special = medical + wages + property + other;
+  const general = state.injured === "yes" ? medical * (Number(state.painMultiplier) || 0) : 0;
+  const gross = special + general;
+  const fr = faultRule();
+  const npp = nppLimits();
+  const nppBI = state.myInsured === "no" ? npp.bi : 0, nppPD = state.myInsured === "no" ? npp.pd : 0;
+  const bodily = Math.max(0, medical + wages + other + general - nppBI);
+  const prop = Math.max(0, property - nppPD);
+  const net = (bodily + prop) * fr.share;
+  return { medical, wages, property, other, special, general, gross, net, fr, nppBI, nppPD };
+}
+
+// No pay, no play: $15k injury / $25k property before Aug 1, 2025; $100k each after (HB 434, 2025).
+function nppLimits() {
+  const after = state.crashDate && parseDate(state.crashDate) >= parseDate("2025-08-01");
+  return after ? { bi: 100000, pd: 100000 } : { bi: 15000, pd: 25000 };
+}
+
+function updatePill() {
+  const d = deadline(), pill = $("#deadlinePill"), txt = $("#deadlinePillText");
+  pill.className = "pill";
+  if (!d) { txt.textContent = "Add your crash date to see your deadline"; return; }
+  if (d.daysLeft < 0) { pill.classList.add("crit"); txt.innerHTML = `Deadline passed <b>${fmt(d.last)}</b>`; return; }
+  if (d.daysLeft <= 90) pill.classList.add("crit"); else if (d.daysLeft <= 180) pill.classList.add("warn");
+  txt.innerHTML = `Sue by <b>${fmt(d.last)}</b> · ${d.daysLeft} days left`;
+}
+
+const views = {
+  intake() {
+    return `
+      <h1>What happened</h1>
+      <p class="lead">These answers drive your deadline, your damages and your letter. Fill in what you know; you can come back.</p>
+      <div class="grid2">
+        <label class="f">Your name<input id="name" value="${esc(state.name)}"></label>
+        <label class="f">Date of the crash<input id="crashDate" type="date" value="${esc(state.crashDate)}"></label>
+        <label class="f">Parish<input id="parish" value="${esc(state.parish)}"></label>
+        <label class="f">Where it happened<input id="location" value="${esc(state.location)}"></label>
+        <label class="f">Other driver's name<input id="otherDriver" value="${esc(state.otherDriver)}"></label>
+        <label class="f">Other driver's insurance company<input id="otherInsurer" value="${esc(state.otherInsurer)}"></label>
+        <label class="f">Claim number<span class="h">On any letter or email from their insurer</span><input id="claimNo" value="${esc(state.claimNo)}"></label>
+        <label class="f">Were you hurt?<select id="injured"><option value="yes">Yes</option><option value="no">No, only my car</option></select></label>
+        <label class="f">Was a police report made?<select id="policeReport"><option value="yes">Yes</option><option value="no">No</option><option value="unsure">Not sure</option></select></label>
+        <label class="f">Did you have car insurance that day?<select id="myInsured"><option value="yes">Yes</option><option value="no">No</option></select></label>
+        <label class="f">How much of the crash was your fault?<span class="h">Your honest guess, 0 to 100%</span><input id="myFault" type="number" min="0" max="100" step="5" value="${esc(state.myFault)}"></label>
+      </div>
+      <label class="f">What happened, in your words<span class="h">One or two sentences. This goes into your demand letter.</span><textarea id="story" style="min-height:90px;font-family:var(--font-body)">${esc(state.story)}</textarea></label>
+      ${intakeFlags()}
+      ${nextRow(null, "deadline", "See your deadline")}`;
+  },
+  deadline() {
+    const d = deadline();
+    if (!d) return `<h1>Your deadline</h1><p>Add the date of the crash in step 1.</p>`;
+    const cls = d.daysLeft < 0 ? "crit" : d.daysLeft <= 180 ? "warn" : "";
+    return `
+      <h1>Your deadline to file a lawsuit</h1>
+      <div class="callout ${cls}">
+        <span>Louisiana calls this deadline <strong>prescription</strong>. File suit by</span>
+        <span class="big">${fmt(d.last)}</span>
+        <span>${d.daysLeft >= 0 ? `${d.daysLeft} days from today.` : "This date has passed. Read the note below before giving up."}</span>
+      </div>
+      <p>A crash on ${fmt(d.crash)} gets <b>${d.years} year${d.years > 1 ? "s" : ""}</b>, because ${d.years === 2 ? "it happened on or after July 1, 2024" : "it happened before July 1, 2024, when the old 1-year rule still applied"}. ${cite("prescription")}</p>
+      ${d.rolled ? `<p>The exact date fell on a weekend, so it moves to the next weekday. ${cite("computation")} Court holidays can push it one more day; check the clerk's calendar.</p>` : ""}
+      <div class="callout warn"><strong>Talking to the insurance company does not stop this clock.</strong><span>Only filing a lawsuit in the right court stops it. Many people lose their claim while waiting on an adjuster. If you have no settlement 60 days before the deadline, plan to file. ${cite("interruption")}</span></div>
+      <h2>Your timeline</h2>
+      <ul class="timeline">
+        ${tl(d.crash, "The crash")}
+        ${tl(addDays(d.crash, 7), "Get the police report and photos of both cars")}
+        ${tl(addDays(d.crash, 30), "Send the insurer your claim and start collecting bills")}
+        ${tl(addDays(d.last, -180), "Send your demand letter if treatment has ended")}
+        ${tl(addDays(d.last, -60), "No fair offer yet? Start your lawsuit paperwork")}
+        ${tl(d.last, "Last day to file suit", true)}
+      </ul>
+      ${nextRow("intake", "damages", "Add up your damages")}`;
+  },
+  damages() {
+    const t = totals();
+    const rows = state.items.map((it, i) => `
+      <tr>
+        <td><select data-i="${i}" data-k="kind">${["Medical", "Lost wages", "Property", "Other"].map(k => `<option ${k === it.kind ? "selected" : ""}>${k}</option>`).join("")}</select></td>
+        <td><input data-i="${i}" data-k="desc" value="${esc(it.desc)}" aria-label="Description"></td>
+        <td class="num"><input data-i="${i}" data-k="amount" type="number" min="0" step="1" value="${esc(it.amount)}" class="mono" style="text-align:right" aria-label="Amount"></td>
+        <td><button class="x" data-del="${i}" aria-label="Remove row">×</button></td>
+      </tr>`).join("");
+    return `
+      <h1>Your damages</h1>
+      <p class="lead">List every bill and loss with proof you can attach: bills, pay stubs, estimates, receipts.</p>
+      <div class="tablebox"><table>
+        <thead><tr><th>Type</th><th>What it is</th><th class="num">Amount ($)</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+      <div class="row"><button class="btn ghost" id="addRow">Add a cost</button></div>
+      ${state.injured === "yes" ? `
+      <label class="f" style="max-width:360px">Pain and suffering estimate
+        <span class="h">Insurers often value this at 1.5 to 5 times medical bills, higher for lasting injuries. This is a negotiating range, not a rule.</span>
+        <select id="painMultiplier">${[1.5, 2, 3, 4, 5].map(m => `<option value="${m}" ${Number(state.painMultiplier) === m ? "selected" : ""}>${m} × medical bills</option>`).join("")}</select>
+      </label>` : ""}
+      <div class="totals">
+        <div><span class="k">Bills and losses</span><span class="v">${money(t.special)}</span></div>
+        <div><span class="k">Pain and suffering</span><span class="v">${money(t.general)}</span></div>
+        <div><span class="k">Total claim</span><span class="v">${money(t.gross)}</span></div>
+        <div><span class="k">After Louisiana rules</span><span class="v">${money(t.net)}</span></div>
+      </div>
+      ${adjustNotes(t)}
+      ${nextRow("deadline", "letter", "Write the demand letter")}`;
+  },
+  letter() {
+    return `
+      <h1>Your demand letter</h1>
+      <p class="lead">Built from your answers. Edit anything, then send it to the adjuster with copies of your bills, the police report and photos. Keep proof you sent it.</p>
+      <textarea id="letterText" aria-label="Demand letter">${esc(letterText())}</textarea>
+      <div class="row"><button class="btn" id="copyLetter">Copy letter</button><span class="toast" id="copied" hidden>Copied</span></div>
+      ${nextRow("damages", "court", "What if they won't pay")}`;
+  },
+  court() {
+    const t = totals(), small = t.net <= 5000;
+    return `
+      <h1>If the insurer won't pay fairly</h1>
+      <p>You can sue the driver (and in Louisiana, their insurer directly). Based on your numbers, your claim is about <b>${money(t.net)}</b>.</p>
+      <div class="choice">
+        <article class="${small ? "fit" : ""}">
+          <h2>Small claims</h2>
+          <p>City court or justice of the peace court in ${esc(state.parish || "your parish")}.</p>
+          <ul><li>Claims up to $5,000</li><li>Simpler forms and hearing</li><li>You give up the right to appeal</li><li>The other side can move it to regular court within 10 days</li></ul>
+          <span>${cite("smallClaims")}</span>
+          ${small ? "" : `<p class="lead">Your claim is over $5,000. You can still use small claims if you accept $5,000 as the most you can win.</p>`}
+        </article>
+        <article class="${small ? "" : "fit"}">
+          <h2>District court</h2>
+          <p>The ${esc(state.parish || "your")} Parish district court.</p>
+          <ul><li>Any amount</li><li>Full civil procedure: petition, service, discovery, trial</li><li>You keep your right to appeal</li><li>Filing fees vary by parish; ask about a fee waiver if you can't afford them</li></ul>
+        </article>
+      </div>
+      <h2>Next in the full app</h2>
+      <p>This step will fill the petition for damages, explain how to serve the driver and insurer, and build your hearing checklist and evidence list.</p>
+      ${nextRow("letter", null)}`;
+  }
+};
+
+function tl(date, text, key) { return `<li class="${key ? "key" : ""}"><span class="d">${fmt(date).replace(/^\w+, /, "")}</span><span>${text}</span></li>`; }
+function nextRow(prev, next, label) {
+  return `<div class="nextrow">${prev ? `<button class="btn ghost" data-go="${prev}">Back</button>` : "<span></span>"}${next ? `<button class="btn" data-go="${next}">${label}</button>` : ""}</div>`;
+}
+
+function intakeFlags() {
+  const fr = faultRule(), out = [];
+  if (fr.barred) out.push(`<div class="callout crit"><strong>At ${fr.f}% fault, Louisiana law bars recovery for this crash.</strong><span>For crashes on or after January 1, 2026, a person 51% or more at fault recovers nothing. Fault is decided by the evidence, not your guess, so gather the police report, photos and witness names before deciding. ${cite("fault")}</span></div>`);
+  else if (fr.f > 0) out.push(`<div class="callout warn"><strong>Your recovery drops by your share of fault.</strong><span>At ${fr.f}% fault, you can recover ${100 - fr.f}% of your damages. ${cite("fault")}</span></div>`);
+  if (state.myInsured === "no") out.push(`<div class="callout warn"><strong>"No pay, no play" applies to uninsured drivers.</strong><span>You can't recover the first ${money(nppLimits().bi)} of injury damages or the first ${money(nppLimits().pd)} of property damage. This doesn't apply if the other driver was convicted of drunk driving or caused the crash on purpose. ${cite("noPayNoPlay")}</span></div>`);
+  if (state.policeReport !== "yes") out.push(`<div class="callout"><strong>Ask for the crash report.</strong><span>Contact the police department or sheriff's office that came to the scene, or Louisiana State Police if it was on a highway.</span></div>`);
+  return out.join("");
+}
+
+function adjustNotes(t) {
+  const n = [];
+  if (t.fr.f > 0) n.push(t.fr.barred ? `At ${t.fr.f}% fault this crash is barred. ${cite("fault")}` : `Reduced ${t.fr.f}% for your share of fault. ${cite("fault")}`);
+  if (state.myInsured === "no") n.push(`First ${money(t.nppBI)} of injury damages and ${money(t.nppPD)} of property damage removed for no insurance. ${cite("noPayNoPlay")}`);
+  return n.length ? `<div class="callout warn">${n.map(x => `<span>${x}</span>`).join("")}</div>` : "";
+}
+
+function letterText() {
+  const t = totals(), d = deadline();
+  const lines = state.items.filter(i => Number(i.amount)).map(i => `  - ${i.desc} (${i.kind.toLowerCase()}): ${money(i.amount)}`).join("\n");
+  const dateStr = state.crashDate ? fmt(parseDate(state.crashDate)).replace(/^\w+, /, "") : "[date]";
+  return `${fmt(today()).replace(/^\w+, /, "")}
+
+${state.otherInsurer || "[Insurance company]"}
+Attn: Claims Adjuster
+Re: Claim No. ${state.claimNo || "[claim number]"}
+    Your insured: ${state.otherDriver || "[driver]"}
+    Date of loss: ${dateStr}
+
+Dear Adjuster:
+
+I am writing to demand payment for the injuries and losses I suffered in the crash on ${dateStr} at ${state.location || "[location]"}, ${state.parish || "[parish]"} Parish, Louisiana.
+
+What happened
+${state.story || "[Describe the crash]"}
+${state.policeReport === "yes" ? "A police report was made and is enclosed.\n" : ""}
+Your insured is liable for this crash under Louisiana Civil Code article 2315, which requires a person whose fault causes damage to another to repair it.
+
+My damages
+${lines}
+
+  Total bills and losses: ${money(t.special)}${state.injured === "yes" ? `
+  Pain, suffering and loss of enjoyment of life: ${money(t.general)}` : ""}
+
+  Total demand: ${money(t.net)}
+
+Copies of my bills, records, estimates and photos are enclosed.
+
+I demand payment of ${money(t.net)} to settle this claim. Please respond in writing within 30 days of the date of this letter. If I do not receive a fair offer, I will file suit${d ? ` before the prescription date of ${fmt(d.last).replace(/^\w+, /, "")}` : ""}.
+
+Sincerely,
+
+${state.name || "[Your name]"}
+
+Enclosures: police report, medical bills and records, wage documentation, repair estimate, photos`;
+}
+
+function render() {
+  if (!views[step]) step = "intake";
+  $("#main").innerHTML = `<section>${views[step]()}</section>`;
+  document.querySelectorAll("nav.steps button").forEach(b => b.setAttribute("aria-current", b.dataset.step === step ? "step" : "false"));
+  ["injured", "policeReport", "myInsured"].forEach(id => { const el = document.getElementById(id); if (el) el.value = state[id]; });
+  updatePill();
+}
+
+function go(s) { step = s; try { history.replaceState(null, "", "#" + s); } catch (e) {} render(); window.scrollTo({ top: 0 }); }
+
+document.querySelector("nav.steps").addEventListener("click", e => { const b = e.target.closest("button"); if (b) go(b.dataset.step); });
+$("#main").addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) return go(g.dataset.go);
+  const del = e.target.closest("[data-del]"); if (del) { state.items.splice(Number(del.dataset.del), 1); save(); return render(); }
+  if (e.target.id === "addRow") { state.items.push({ kind: "Medical", desc: "", amount: 0 }); save(); render(); return; }
+  if (e.target.id === "copyLetter") {
+    const ta = $("#letterText"), shown = () => { $("#copied").hidden = false; setTimeout(() => { const c = $("#copied"); if (c) c.hidden = true; }, 1600); };
+    navigator.clipboard?.writeText(ta.value).then(shown).catch(() => { ta.select(); });
+  }
+});
+$("#main").addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.k) { const it = state.items[Number(el.dataset.i)]; it[el.dataset.k] = el.dataset.k === "amount" ? Number(el.value) : el.value; save(); return render(); }
+  if (el.id && el.id !== "letterText" && el.id in state) { state[el.id] = el.type === "number" ? Number(el.value) : el.value; save(); render(); }
+});
+$("#main").addEventListener("input", e => {
+  const el = e.target;
+  if (["name", "location", "parish", "otherDriver", "otherInsurer", "claimNo", "story"].includes(el.id)) { state[el.id] = el.value; save(); }
+});
+
+render();
+</script>
