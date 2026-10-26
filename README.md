@@ -15,6 +15,7 @@ Self-help software for people handling civil cases without a lawyer. It gives pe
 - `app/` is the real web app (Next.js, TypeScript, Tailwind).
   - `app/src/lib/legal/` holds the legal logic: the Louisiana car accident rules pack (every rule cited and marked checked or to verify), the filing deadline calculator and the claim value calculator.
   - `/medical-malpractice` walks a patient through a Louisiana malpractice claim: the 1-year/3-year deadline (R.S. 9:5628) and how a panel request stops it, checking whether the provider is enrolled with the Patient's Compensation Fund, getting records, a panel request letter with every item R.S. 40:1231.8 requires, the fee and panel dates, finding a qualified expert (R.S. 9:2794), and the $500,000 cap (R.S. 40:1231.2).
+  - `/medical-malpractice/case-file` is the person's case file: case facts entered once, medical records uploaded and kept only in the browser (IndexedDB, with a .zip backup), responses to papers they're served (oppositions to exceptions of prescription and no right of action, sworn discovery answers, guidance for depositions, subpoenas and prematurity) and court-ready documents (records request, subpoena request, petition to compel, motion to extend) to print or save as PDF.
   - Run it: `cd app && npm install && npm run dev`, then open http://localhost:3000.
   - Test it: `cd app && npm test`.
 

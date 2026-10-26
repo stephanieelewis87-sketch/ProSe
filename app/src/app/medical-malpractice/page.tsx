@@ -17,6 +17,10 @@ export default function MedicalMalpractice() {
           dates, but each step is a letter, a fee or a choice. This walks you through them in order, with the law for
           each one.
         </p>
+        <Link href="/medical-malpractice/case-file"
+          className="self-start rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white">
+          Open your case file: records, documents and responses
+        </Link>
       </header>
       <MalpracticeGuide />
     </main>

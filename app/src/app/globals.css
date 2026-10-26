@@ -19,3 +19,9 @@ body {
   background: var(--background);
   font-family: "Public Sans", "Segoe UI", system-ui, sans-serif;
 }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .paper { border: none !important; box-shadow: none !important; padding: 0 !important; }
+}
