@@ -16,6 +16,7 @@ const steps = [
   "Get your records",
   "Request the panel",
   "Fee and panel dates",
+  "Court during the panel",
   "Find your expert",
   "What you can recover",
 ] as const;
@@ -420,6 +421,44 @@ export function MalpracticeGuide() {
         {step === 5 && (
           <>
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              The panel isn&apos;t a court, but you can still end up in one while it&apos;s working. Expect this, so
+              papers from a district court don&apos;t catch you off guard.
+            </p>
+            <Box tone="warn">
+              <strong>Exception hearings</strong>
+              <ul className="list-disc pl-5">
+                {p.courtDuringPanel.exceptions.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}
+              </ul>
+            </Box>
+            <Box tone="plain">
+              <strong>If you get an exception</strong>
+              <ol className="list-decimal pl-5">
+                <li>Write down the hearing date and the deadline for your written opposition.</li>
+                <li>Find what it says is wrong. For prescription it&apos;s almost always about dates.</li>
+                <li>Answer with proof: the date you found out and how (step 1), the date you mailed the panel request
+                  and its certified-mail receipt, and the fee receipt or waiver.</li>
+                <li>Go to the hearing. If you don&apos;t, the court can grant the exception without hearing you.</li>
+              </ol>
+            </Box>
+            <Box tone="plain">
+              <strong>Discovery</strong>
+              <ul className="list-disc pl-5">
+                {p.courtDuringPanel.discovery.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}
+              </ul>
+              <span>Answer discovery on time and truthfully, and keep a copy of everything you send.</span>
+            </Box>
+            <Box tone="plain">
+              <strong>Other times you can go to court</strong>
+              <ul className="list-disc pl-5">
+                {p.courtDuringPanel.other.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}
+              </ul>
+            </Box>
+          </>
+        )}
+
+        {step === 6 && (
+          <>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
               To win you have to prove three things, and in most cases a doctor has to say them.
             </p>
             <ol className="flex list-decimal flex-col gap-1 pl-5 text-sm">
@@ -469,7 +508,7 @@ export function MalpracticeGuide() {
           </>
         )}
 
-        {step === 6 && (
+        {step === 7 && (
           <>
             <div className="grid gap-4 sm:grid-cols-3">
               <label className={label}>

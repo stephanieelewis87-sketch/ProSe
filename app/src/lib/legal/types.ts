@@ -87,6 +87,8 @@ export interface MedMalPack {
     opinionUse: Note;
     costs: Note[];
     waiverByAgreement: Citation;
+    /** Court proceedings that can happen while the panel is still pending. */
+    courtDuringPanel: { exceptions: Note[]; discovery: Note[]; other: Note[] };
   };
   cap: {
     /** Total recovery for all claims for one patient, before interest and costs. */

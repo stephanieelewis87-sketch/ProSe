@@ -84,6 +84,50 @@ export const louisianaMedicalMalpractice: MedMalPack = {
       },
     ],
     waiverByAgreement: { label: "La. R.S. 40:1231.8(B)(1)(c)", url: rs40_1231_8, verified: true },
+    courtDuringPanel: {
+      exceptions: [
+        {
+          text: "The provider can go to district court at any time, without waiting for the panel, and file an exception: usually that your claim was filed too late (prescription) or that you aren't a person the law lets bring it (no right of action). The court holds a hearing on it.",
+          citation: { label: "La. R.S. 40:1231.8(B)(2)(a)", url: rs40_1231_8, verified: true },
+        },
+        {
+          text: "If the court grants the exception against every claimant, the panel is dissolved once the judgment is final.",
+          citation: { label: "La. R.S. 40:1231.8(B)(2)(b)", url: rs40_1231_8, verified: true },
+        },
+        {
+          text: "The court sets a deadline for your written opposition before the hearing. Read the notice the day it arrives.",
+          citation: { label: "La. Dist. Ct. R. 9.9", verified: false },
+        },
+        {
+          text: "If you file suit before the panel is done, the provider will file an exception of prematurity and the suit will be dismissed.",
+          citation: { label: "La. Code Civ. Proc. art. 926", verified: false },
+        },
+      ],
+      discovery: [
+        {
+          text: "Depositions of the parties and witnesses can be taken before the panel meets. You may be asked to sit for one, or to answer written questions (interrogatories) under oath.",
+          citation: { label: "La. R.S. 40:1231.8(D)(2)–(3)", url: rs40_1231_8, verified: true },
+        },
+        {
+          text: "Any party can have the clerk of any district court issue subpoenas for testimony and for documents. You can use this too, for example for records a provider hasn't sent.",
+          citation: { label: "La. R.S. 40:1231.8(D)(4)", url: rs40_1231_8, verified: true },
+        },
+        {
+          text: "On the expedited panel there are no depositions or interrogatories; only records, imaging, tests and a position paper.",
+          citation: { label: "La. R.S. 40:1231.8(N)(4)", url: rs40_1231_8, verified: true },
+        },
+      ],
+      other: [
+        {
+          text: "If the other side doesn't follow the panel rules, such as not naming its doctor, you can ask a district court for an order making them.",
+          citation: { label: "La. R.S. 40:1231.8(C)(6)", url: rs40_1231_8, verified: true },
+        },
+        {
+          text: "Either side can ask a court to extend the 12 months the panel has to give its opinion.",
+          citation: { label: "La. R.S. 40:1231.8(B)(1)(b)", url: rs40_1231_8, verified: true },
+        },
+      ],
+    },
   },
   cap: {
     total: 500000,
