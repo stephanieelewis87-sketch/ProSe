@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { toIso } from "@/lib/legal/dates";
 import { capRecovery, malpracticeDeadline, panelRequestLetter, panelTimeline } from "@/lib/legal/malpractice";
 import { louisianaMedicalMalpractice as pack } from "@/lib/legal/packs/louisiana-medical-malpractice";
+import { Box } from "./Box";
 import { Cite, longDate } from "./Cite";
 
 const input = "rounded-lg border border-neutral-300 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900";
@@ -22,16 +23,6 @@ const steps = [
 ] as const;
 
 type Coverage = "yes" | "no" | "unknown";
-
-function Box({ tone, children }: { tone: "ok" | "warn" | "bad" | "plain"; children: React.ReactNode }) {
-  const bg = {
-    ok: "bg-emerald-50 dark:bg-emerald-950",
-    warn: "bg-amber-50 dark:bg-amber-950",
-    bad: "bg-red-50 dark:bg-red-950",
-    plain: "bg-neutral-100 dark:bg-neutral-800",
-  }[tone];
-  return <div className={`flex flex-col gap-1.5 rounded-lg p-4 text-sm ${bg}`}>{children}</div>;
-}
 
 export function MalpracticeGuide() {
   const today = toIso(new Date());

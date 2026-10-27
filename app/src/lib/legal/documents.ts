@@ -63,13 +63,19 @@ export interface LegalDocument {
   order?: string;
   /** Sworn answers carry a verification for a notary. */
   verified?: boolean;
+  /** A verification with its own sworn statement and signer role, in place of the default for answers. */
+  verification?: { statement: string; role: string };
+  /** Papers the sheriff serves, or that aren't served at all, have no certificate of service. */
+  noCertificate?: boolean;
+  /** Line above the signature; "Respectfully submitted," when omitted. */
+  signoff?: string;
   serveOn?: string;
   citations: Citation[];
   /** Things the person should fix or know before filing. */
   warnings: string[];
 }
 
-const blank = (s: string | undefined, what: string) => (s ?? "").trim() || `[${what}]`;
+export const blank = (s: string | undefined, what: string) => (s ?? "").trim() || `[${what}]`;
 
 export const fmtDate = (iso: IsoDate) =>
   iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" }) : "";
@@ -326,6 +332,12 @@ export function motionToExtend(f: CaseFacts, chairmanNoticeDate: IsoDate, goodCa
 }
 
 /** The whole document as plain text, for copying and for tests. */
+/** The sworn statement and signer role for a verified document, or null. */
+export function verificationOf(doc: LegalDocument): { statement: string; role: string } | null {
+  if (doc.verification) return doc.verification;
+  return doc.verified ? { statement: "the answers above are true and correct to the best of their knowledge", role: "Claimant" } : null;
+}
+
 export function documentText(doc: LegalDocument): string {
   const out: string[] = [];
   const c = doc.caption;
@@ -350,23 +362,24 @@ export function documentText(doc: LegalDocument): string {
   if (doc.exhibits.length) out.push("Exhibits attached:", ...doc.exhibits, "");
   const s = doc.signer;
   out.push(
-    "Respectfully submitted,",
+    doc.signoff ?? "Respectfully submitted,",
     "",
     "______________________________",
     `${blank(s.name, "your name")}${doc.kind === "pleading" ? ", in proper person" : ""}`,
     blank(s.address, "your address"),
     [s.phone, s.email].filter((x) => x.trim()).join(" · ") || "[phone and email]",
   );
-  if (doc.verified) {
+  const v = verificationOf(doc);
+  if (v) {
     out.push(
       "", "VERIFICATION",
       `STATE OF LOUISIANA, PARISH OF ${blank(c?.parish, "parish").toUpperCase()}`,
-      `Before me, the undersigned notary, personally appeared ${blank(s.name, "your name")}, who, being sworn, said that the answers above are true and correct to the best of their knowledge.`,
+      `Before me, the undersigned notary, personally appeared ${blank(s.name, "your name")}, who, being sworn, said that ${v.statement}.`,
       "______________________________  ______________________________",
-      "Claimant                          Notary Public",
+      `${v.role.padEnd(34)}Notary Public`,
     );
   }
-  if (doc.kind === "pleading") {
+  if (doc.kind === "pleading" && !doc.noCertificate) {
     out.push(
       "", "CERTIFICATE OF SERVICE",
       `I certify that a copy of this document has been served on ${blank(doc.serveOn, "the other side's lawyers, with addresses")} by mail or email on ____________, 20__.`,
