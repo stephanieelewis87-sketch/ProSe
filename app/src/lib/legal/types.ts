@@ -102,3 +102,29 @@ export interface MedMalPack {
   qualification: { text: string; phone: string; citation: Citation };
   records: Note;
 }
+
+/** One kind of person who can help someone get through a court date. */
+export interface SupportOption {
+  id: string;
+  name: string;
+  who: string;
+  cost: string;
+  canDo: string[];
+  cannot: string[];
+  citation?: Citation;
+}
+
+/** Where a person without support can find help for court, and the limits on what helpers can do. */
+export interface CourtSupportPack {
+  id: string;
+  state: string;
+  limits: {
+    unauthorizedPractice: Note;
+    openCourts: Note;
+    noPrivilege: Note;
+    accommodation: Note;
+    interpreter: Note;
+  };
+  options: SupportOption[];
+  resources: { name: string; what: string; url: string }[];
+}
