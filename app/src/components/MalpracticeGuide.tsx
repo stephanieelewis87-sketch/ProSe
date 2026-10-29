@@ -219,6 +219,13 @@ export function MalpracticeGuide() {
               </span>
               <Cite c={pack.pauper.sections[0].items[0].citation} />
             </Box>
+            <Box tone="plain">
+              <span>
+                <strong>Hurt during a psychiatric hospital stay?</strong> Abuse by staff, being held without the
+                legal steps, denied patient rights and civil rights violations are separate claims, often with no
+                panel and no cap. <a className="font-semibold underline" href="/psychiatric-stay">Sort out your claims</a>.
+              </span>
+            </Box>
           </>
         )}
 
