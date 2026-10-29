@@ -77,7 +77,7 @@ export const louisianaMedicalMalpractice: MedMalPack = {
         citation: { label: "La. R.S. 40:1231.8(I)(1)", url: rs40_1231_8, verified: true },
       },
       {
-        text: "The losing side of the opinion pays the panel's costs, and they're split when the panel finds a fact question. With a pauper ruling, the provider pays up front and is repaid from any recovery.",
+        text: "The side the opinion favors pays the panel's costs: the provider if the panel rules for the provider, you if it rules for you. The costs are split if the panel finds a fact question. With a pauper ruling, the provider pays your share up front and is repaid only out of any money you recover.",
         citation: { label: "La. R.S. 40:1231.8(I)(2)–(3)", url: rs40_1231_8, verified: true },
       },
       {
