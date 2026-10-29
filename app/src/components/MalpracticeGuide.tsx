@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { toIso } from "@/lib/legal/dates";
 import { capRecovery, malpracticeDeadline, panelRequestLetter, panelTimeline } from "@/lib/legal/malpractice";
 import { louisianaMedicalMalpractice as pack } from "@/lib/legal/packs/louisiana-medical-malpractice";
+import { Box } from "./Box";
 import { Cite, longDate } from "./Cite";
 
 const input = "rounded-lg border border-neutral-300 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900";
@@ -16,20 +17,32 @@ const steps = [
   "Get your records",
   "Request the panel",
   "Fee and panel dates",
+  "Court during the panel",
   "Find your expert",
   "What you can recover",
 ] as const;
 
 type Coverage = "yes" | "no" | "unknown";
 
-function Box({ tone, children }: { tone: "ok" | "warn" | "bad" | "plain"; children: React.ReactNode }) {
-  const bg = {
-    ok: "bg-emerald-50 dark:bg-emerald-950",
-    warn: "bg-amber-50 dark:bg-amber-950",
-    bad: "bg-red-50 dark:bg-red-950",
-    plain: "bg-neutral-100 dark:bg-neutral-800",
-  }[tone];
-  return <div className={`flex flex-col gap-1.5 rounded-lg p-4 text-sm ${bg}`}>{children}</div>;
+function PauperBox() {
+  return (
+    <Box tone="ok">
+      <strong>Low or no income? Ask for pauper status (in forma pauperis).</strong>
+      <span>A judge&apos;s order lets you go forward without paying costs up front. It covers the panel fee, your
+        share of the panel&apos;s costs, and court costs.</span>
+      {pack.pauper.sections.map((sec) => (
+        <div key={sec.heading} className="flex flex-col gap-1 pt-1">
+          <strong>{sec.heading}</strong>
+          <ul className="list-disc pl-5">{sec.items.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}</ul>
+        </div>
+      ))}
+      <strong className="pt-1">How to apply</strong>
+      <ol className="list-decimal pl-5">{pack.pauper.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+      <a className="self-start font-semibold underline" href="/medical-malpractice/case-file?doc=pauper">
+        Make your pauper application in the case file
+      </a>
+    </Box>
+  );
 }
 
 export function MalpracticeGuide() {
@@ -197,6 +210,21 @@ export function MalpracticeGuide() {
                 Filing it with any other agency doesn&apos;t count.
               </span>
               <Cite c={p.suspensionCitation} />
+            </Box>
+            <Box tone="plain">
+              <span>
+                <strong>Can&apos;t afford the costs?</strong> With low or no income you can ask a judge for pauper
+                status (in forma pauperis). It covers the panel fee, your share of panel costs and court costs. Step 5
+                explains it, and the case file makes the application.
+              </span>
+              <Cite c={pack.pauper.sections[0].items[0].citation} />
+            </Box>
+            <Box tone="plain">
+              <span>
+                <strong>Hurt during a psychiatric hospital stay?</strong> Abuse by staff, being held without the
+                legal steps, denied patient rights and civil rights violations are separate claims, often with no
+                panel and no cap. <a className="font-semibold underline" href="/psychiatric-stay">Sort out your claims</a>.
+              </span>
             </Box>
           </>
         )}
@@ -396,6 +424,7 @@ export function MalpracticeGuide() {
               <ul className="list-disc pl-5">{p.feeWaivers.map((w) => <li key={w.text}>{w.text} <Cite c={w.citation} /></li>)}</ul>
               <Cite c={p.feeCitation} />
             </Box>
+            <PauperBox />
             <Box tone="plain">
               <strong>How the panel works</strong>
               <span>
@@ -418,6 +447,44 @@ export function MalpracticeGuide() {
         )}
 
         {step === 5 && (
+          <>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              The panel isn&apos;t a court, but you can still end up in one while it&apos;s working. Expect this, so
+              papers from a district court don&apos;t catch you off guard.
+            </p>
+            <Box tone="warn">
+              <strong>Exception hearings</strong>
+              <ul className="list-disc pl-5">
+                {p.courtDuringPanel.exceptions.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}
+              </ul>
+            </Box>
+            <Box tone="plain">
+              <strong>If you get an exception</strong>
+              <ol className="list-decimal pl-5">
+                <li>Write down the hearing date and the deadline for your written opposition.</li>
+                <li>Find what it says is wrong. For prescription it&apos;s almost always about dates.</li>
+                <li>Answer with proof: the date you found out and how (step 1), the date you mailed the panel request
+                  and its certified-mail receipt, and the fee receipt or waiver.</li>
+                <li>Go to the hearing. If you don&apos;t, the court can grant the exception without hearing you.</li>
+              </ol>
+            </Box>
+            <Box tone="plain">
+              <strong>Discovery</strong>
+              <ul className="list-disc pl-5">
+                {p.courtDuringPanel.discovery.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}
+              </ul>
+              <span>Answer discovery on time and truthfully, and keep a copy of everything you send.</span>
+            </Box>
+            <Box tone="plain">
+              <strong>Other times you can go to court</strong>
+              <ul className="list-disc pl-5">
+                {p.courtDuringPanel.other.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}
+              </ul>
+            </Box>
+          </>
+        )}
+
+        {step === 6 && (
           <>
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
               To win you have to prove three things, and in most cases a doctor has to say them.
@@ -469,7 +536,7 @@ export function MalpracticeGuide() {
           </>
         )}
 
-        {step === 6 && (
+        {step === 7 && (
           <>
             <div className="grid gap-4 sm:grid-cols-3">
               <label className={label}>

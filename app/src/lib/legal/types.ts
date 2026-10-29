@@ -87,6 +87,8 @@ export interface MedMalPack {
     opinionUse: Note;
     costs: Note[];
     waiverByAgreement: Citation;
+    /** Court proceedings that can happen while the panel is still pending. */
+    courtDuringPanel: { exceptions: Note[]; discovery: Note[]; other: Note[] };
   };
   cap: {
     /** Total recovery for all claims for one patient, before interest and costs. */
@@ -101,4 +103,63 @@ export interface MedMalPack {
   expert: { qualifications: string[]; citation: Citation; notes: Note[] };
   qualification: { text: string; phone: string; citation: Citation };
   records: Note;
+  /** Proceeding without paying costs (in forma pauperis) for people who can't afford them. */
+  pauper: { sections: { heading: string; items: Note[] }[]; steps: string[] };
 }
+
+/** Divorce in one state: the no-fault and fault paths, waiting periods, and the related claims. */
+export interface DivorcePack {
+  id: string;
+  state: string;
+  caseType: string;
+  /** Who may file here and where. */
+  filing: { jurisdiction: Note; domicilePresumptionMonths: number; venue: Note; covenant: Note; fees: Note };
+  /** Days the spouses must live apart, and that must pass after service, before a no-fault divorce. */
+  periods: { noMinorChildren: number; minorChildren: number; citation: Citation; computation: Citation };
+  /** Divorce on motion after the petition: art. 102. */
+  afterPetition: {
+    citation: Citation;
+    ruleRequirements: string[];
+    ruleCitation: Citation;
+    /** Years after service or waiver to file the rule before the case is abandoned. */
+    abandonmentYears: number;
+    abandonmentCitation: Citation;
+    evidence: string[];
+    evidenceCitation: Citation;
+    withoutHearing: Note;
+  };
+  /** Divorce on petition when a ground already exists: art. 103. */
+  grounds: { id: DivorceGround; label: string; plain: string; waitingPeriod: boolean }[];
+  groundsCitation: Citation;
+  incidental: { matters: string[]; citation: Citation };
+  custody: {
+    agreement: Note;
+    jointPresumption: Note;
+    factors: string[];
+    factorsCitation: Citation;
+    familyViolence: Note[];
+    notes: Note[];
+  };
+  childSupport: { presumption: Note; steps: string[]; stepsCitation: Citation; notes: Note[] };
+  spousalSupport: {
+    interim: Note[];
+    final: Note;
+    finalFactors: string[];
+    /** Final periodic support can't be more than this fraction of the payer's net income, unless abuse is shown. */
+    finalCapFraction: number;
+    capCitation: Citation;
+    abusePresumption: Note;
+  };
+  property: {
+    communityEnds: Note;
+    /** Days after service of a motion to file the sworn detailed descriptive list. */
+    listDays: number;
+    /** Days after the last list is served to traverse or concur. */
+    traverseDays: number;
+    partitionCitation: Citation;
+    notes: Note[];
+  };
+  safety: Note[];
+}
+
+export type DivorceGround = "separated" | "adultery" | "felony" | "abuse" | "protectiveOrder";

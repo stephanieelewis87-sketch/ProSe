@@ -4,9 +4,11 @@ import { DeadlineChecker } from "@/components/DeadlineChecker";
 export default function Home() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10">
-      <nav className="flex gap-4 text-sm">
+      <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         <span className="font-semibold">Car accident</span>
         <Link href="/medical-malpractice" className="underline">Medical malpractice</Link>
+        <Link href="/divorce" className="underline">Divorce</Link>
+        <Link href="/psychiatric-stay" className="underline">Psychiatric hospital stay</Link>
       </nav>
       <header className="flex flex-col gap-2">
         <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
