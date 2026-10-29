@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   discoveryResponses, documentText, exhibitLabels, motionToExtend, oppositionToNoRightOfAction,
-  oppositionToPrescription, petitionToCompel, recordsRequest, subpoenaRequest, type CaseFacts,
+  oppositionToPrescription, pauperApplication, petitionToCompel, recordsRequest, subpoenaRequest, type CaseFacts,
 } from "../documents";
 import { louisianaMedicalMalpractice as la } from "../packs/louisiana-medical-malpractice";
 
@@ -75,5 +75,33 @@ describe("other documents", () => {
     expect(text).not.toContain("CERTIFICATE OF SERVICE");
     expect(text).toContain("[provider's address]");
     expect(documentText(subpoenaRequest(facts, "Ochsner", "", "x-rays", "Ouachita"))).toContain("40:1231.8(D)(4)");
+  });
+});
+
+describe("pauperApplication", () => {
+  const fin = {
+    householdSize: 3, monthlyIncome: 1450, incomeSources: "part-time work", benefits: ["SNAP (food stamps)", "Medicaid"],
+    monthlyExpenses: 1600, property: "2010 car worth $2,500", debts: "", helper: { name: "Ann Roe", address: "3 Oak St", relationship: "sister" },
+  };
+
+  it("includes the motion, both affidavits and an order, and isn't served", () => {
+    const text = documentText(pauperApplication(facts, fin));
+    expect(text).toContain("EX PARTE MOTION TO PROCEED WITHOUT PRIOR PAYMENT OF COSTS");
+    expect(text).toContain("AFFIDAVIT OF POVERTY");
+    expect(text).toContain("AFFIDAVIT OF THIRD PERSON");
+    expect(text).toContain("3 people live in my household");
+    expect(text).toContain("$1,450");
+    expect(text).toContain("presumption of eligibility");
+    expect(text).toContain("40:1231.8(A)(1)(d)");
+    expect(text).toContain("I am not Jane Doe's attorney");
+    expect(text).not.toContain("CERTIFICATE OF SERVICE");
+    expect(text).toContain("JUDGE");
+  });
+
+  it("asks for a second person and proof when missing", () => {
+    const doc = pauperApplication(facts, { ...fin, benefits: [], helper: { name: "", address: "", relationship: "" } });
+    expect(doc.warnings.some((w) => /isn't your lawyer/.test(w))).toBe(true);
+    expect(doc.warnings.some((w) => /125%/.test(w))).toBe(true);
+    expect(documentText(doc)).not.toContain("presumption of eligibility");
   });
 });

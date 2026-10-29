@@ -50,6 +50,12 @@ export interface CaseFacts {
   serveOn: string;
 }
 
+export interface Affidavit {
+  title: string;
+  affiant: string;
+  statements: string[];
+}
+
 export interface LegalDocument {
   title: string;
   kind: "letter" | "pleading";
@@ -63,6 +69,10 @@ export interface LegalDocument {
   order?: string;
   /** Sworn answers carry a verification for a notary. */
   verified?: boolean;
+  /** Sworn statements by the filer or others, each signed before a notary. */
+  affidavits?: Affidavit[];
+  /** An ex parte motion isn't served on the other side. */
+  exParte?: boolean;
   serveOn?: string;
   citations: Citation[];
   /** Things the person should fix or know before filing. */
@@ -366,7 +376,17 @@ export function documentText(doc: LegalDocument): string {
       "Claimant                          Notary Public",
     );
   }
-  if (doc.kind === "pleading") {
+  for (const a of doc.affidavits ?? []) {
+    out.push(
+      "", a.title.toUpperCase(),
+      `STATE OF LOUISIANA, PARISH OF ${blank(c?.parish, "parish").toUpperCase()}`,
+      `Before me, the undersigned notary, personally appeared ${a.affiant}, who, being sworn, said:`,
+      ...a.statements.map((st, i) => `${i + 1}. ${st}`),
+      "______________________________  ______________________________",
+      "Affiant                           Notary Public",
+    );
+  }
+  if (doc.kind === "pleading" && !doc.exParte) {
     out.push(
       "", "CERTIFICATE OF SERVICE",
       `I certify that a copy of this document has been served on ${blank(doc.serveOn, "the other side's lawyers, with addresses")} by mail or email on ____________, 20__.`,
@@ -375,4 +395,80 @@ export function documentText(doc: LegalDocument): string {
   }
   if (doc.order) out.push("", "ORDER", doc.order, "", "______________________________", "JUDGE");
   return out.join("\n");
+}
+
+export interface Finances {
+  householdSize: number;
+  /** Gross monthly income of the household from all sources. */
+  monthlyIncome: number;
+  incomeSources: string;
+  benefits: string[];
+  monthlyExpenses: number;
+  property: string;
+  debts: string;
+  helper: { name: string; address: string; relationship: string };
+}
+
+export const benefitOptions = ["SNAP (food stamps)", "Medicaid", "SSI", "TANF/FITAP", "WIC", "Public housing or Section 8"];
+
+const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+/** Motion to proceed without prior payment of costs, with both affidavits and a proposed order. */
+export function pauperApplication(f: CaseFacts, fin: Finances): LegalDocument {
+  const warnings: string[] = [];
+  if (!fin.helper.name.trim()) warnings.push("The second affidavit needs someone who knows your finances and isn't your lawyer.");
+  if (!fin.benefits.length) warnings.push("Attach proof of income (pay stubs, a tax return or a benefits letter). A benefits letter, or income at or below 125% of the federal poverty guidelines, makes the court presume you qualify.");
+  else warnings.push("Attach your benefits letter. It makes the court presume you qualify.");
+  warnings.push("Sign both affidavits in front of a notary. Many clerks' offices have one.");
+  const you = blank(f.you.name, "your name");
+  return {
+    title: "Ex Parte Motion to Proceed Without Prior Payment of Costs",
+    kind: "pleading",
+    caption: f.caption,
+    exParte: true,
+    blocks: [
+      { kind: "p", text: `${you}, in proper person, moves to proceed without paying costs in advance, as they accrue, or furnishing security, and represents:` },
+      { kind: "list", items: [
+        `Mover is a claimant in a medical review panel proceeding concerning the treatment of ${blank(f.patient, "patient")} by ${providerNames(f)}, and seeks to bring or continue the related judicial proceedings.`,
+        "Because of poverty and lack of means, mover cannot pay the costs of court in advance, as they accrue, or furnish security for them. La. Code Civ. Proc. art. 5181(A).",
+        "Mover's affidavit, the affidavit of a third person who knows mover's financial condition, and supporting documents are attached. La. Code Civ. Proc. art. 5183(A).",
+        ...(fin.benefits.length ? [`Mover receives ${fin.benefits.join(", ")}, which entitles mover to a presumption of eligibility. La. Code Civ. Proc. art. 5183(B)(2).`] : []),
+        "Mover also asks that this order serve as the ruling that waives the medical review panel filing fee and mover's share of panel costs. La. R.S. 40:1231.8(A)(1)(d), (I)(2)(b).",
+      ] },
+      { kind: "p", text: "Mover asks the Court to grant this motion and allow mover to proceed without prior payment of costs." },
+    ],
+    affidavits: [
+      {
+        title: "Affidavit of Poverty",
+        affiant: you,
+        statements: [
+          `I am the mover. I live at ${blank(f.you.address, "your address")}. ${fin.householdSize > 0 ? `${fin.householdSize} ${fin.householdSize === 1 ? "person lives" : "people live"} in my household.` : "[household size]"}`,
+          `My household's gross monthly income from all sources is ${money(Math.max(0, fin.monthlyIncome || 0))}${fin.incomeSources.trim() ? `, from ${fin.incomeSources.trim()}` : ""}.`,
+          fin.benefits.length ? `I receive: ${fin.benefits.join(", ")}.` : "I receive no public assistance.",
+          `My necessary monthly expenses are about ${money(Math.max(0, fin.monthlyExpenses || 0))}.`,
+          `Property I own: ${blank(fin.property, "car, home, bank accounts and their value, or none")}.`,
+          `Debts I owe: ${blank(fin.debts, "debts, or none")}.`,
+          "Because of poverty and lack of means, I am unable to pay the costs of court in advance, or as they accrue, or to furnish security for them.",
+        ],
+      },
+      {
+        title: "Affidavit of Third Person",
+        affiant: `${blank(fin.helper.name, "name of the person who knows your finances")}, of ${blank(fin.helper.address, "their address")}`,
+        statements: [
+          `I know ${you}${fin.helper.relationship.trim() ? ` as their ${fin.helper.relationship.trim()}` : ""} and I am familiar with their financial condition.`,
+          `I believe ${you} is unable to pay the costs of court in advance, or as they accrue, or to furnish security for them.`,
+          `I am not ${you}'s attorney.`,
+        ],
+      },
+    ],
+    order: `Considering the motion and the affidavits, IT IS ORDERED that ${you} be permitted to proceed without prior payment of costs under La. Code Civ. Proc. art. 5181 et seq., and that this order serves as the in forma pauperis ruling for La. R.S. 40:1231.8(A)(1)(d) and (I)(2)(b).`,
+    signer: f.you,
+    exhibits: [],
+    citations: [
+      { label: "La. Code Civ. Proc. art. 5181", url: "https://www.legis.la.gov/Legis/Law.aspx?d=112172", verified: true },
+      { label: "La. Code Civ. Proc. art. 5183", url: "https://www.legis.la.gov/LEGIS/Law.aspx?d=112174", verified: true },
+      { label: "La. R.S. 40:1231.8(A)(1)(d), (I)(2)(b)", url: rs40_1231_8, verified: true },
+    ],
+    warnings,
+  };
 }

@@ -65,7 +65,16 @@ export function DocumentView({ doc }: { doc: LegalDocument }) {
             <div className="grid grid-cols-2 gap-8 pt-6"><span className="border-t border-black">Claimant</span><span className="border-t border-black">Notary Public</span></div>
           </div>
         )}
-        {doc.kind === "pleading" && (
+        {doc.affidavits?.map((a) => (
+          <div key={a.title} className="flex flex-col gap-2 pt-6" style={{ breakBefore: "page" }}>
+            <h3 className="text-center font-bold uppercase">{a.title}</h3>
+            <p>State of Louisiana, Parish of <B v={c?.parish ?? ""} what="parish" /></p>
+            <p>Before me, the undersigned notary, personally appeared {a.affiant}, who, being sworn, said:</p>
+            <ol className="list-decimal pl-8">{a.statements.map((st) => <li key={st} className="pb-1">{st}</li>)}</ol>
+            <div className="grid grid-cols-2 gap-8 pt-6"><span className="border-t border-black">Affiant</span><span className="border-t border-black">Notary Public</span></div>
+          </div>
+        ))}
+        {doc.kind === "pleading" && !doc.exParte && (
           <div className="flex flex-col gap-2 pt-4">
             <h3 className="text-center font-bold uppercase">Certificate of service</h3>
             <p>I certify that a copy of this document has been served on <B v={doc.serveOn ?? ""} what="the other side's lawyers, with addresses" /> by

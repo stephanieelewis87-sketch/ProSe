@@ -103,4 +103,6 @@ export interface MedMalPack {
   expert: { qualifications: string[]; citation: Citation; notes: Note[] };
   qualification: { text: string; phone: string; citation: Citation };
   records: Note;
+  /** Proceeding without paying costs (in forma pauperis) for people who can't afford them. */
+  pauper: { sections: { heading: string; items: Note[] }[]; steps: string[] };
 }

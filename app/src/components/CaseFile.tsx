@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toIso } from "@/lib/legal/dates";
 import {
   discoveryResponses, exhibitLabels, motionToExtend, oppositionToNoRightOfAction, oppositionToPrescription,
-  petitionToCompel, recordsRequest, subpoenaRequest, type CaseFacts, type DiscoveryItem, type Relationship,
+  benefitOptions, pauperApplication, petitionToCompel, recordsRequest, subpoenaRequest,
+  type CaseFacts, type DiscoveryItem, type Finances, type Relationship,
 } from "@/lib/legal/documents";
 import { louisianaMedicalMalpractice as pack } from "@/lib/legal/packs/louisiana-medical-malpractice";
 import {
@@ -53,8 +54,9 @@ const received: { id: Received; label: string }[] = [
   { id: "prematurity", label: "Exception of prematurity (you sued before the panel finished)" },
 ];
 
-type Creatable = "records" | "subpoena" | "compel" | "extend";
+type Creatable = "pauper" | "records" | "subpoena" | "compel" | "extend";
 const creatable: { id: Creatable; label: string }[] = [
+  { id: "pauper", label: "Ask to proceed without paying costs (pauper status)" },
   { id: "records", label: "Request your medical records" },
   { id: "subpoena", label: "Ask the clerk for a subpoena for records" },
   { id: "compel", label: "Ask the court to make the other side follow the panel rules" },
@@ -93,7 +95,17 @@ export function CaseFile() {
   const exhibits = exhibitLabels(ordered.filter((r) => chosen.includes(r.id)).map(recordTitle));
 
   const [got, setGot] = useState<Received>("prescription");
-  const [make, setMake] = useState<Creatable>("records");
+  const [make, setMake] = useState<Creatable>("pauper");
+  const [fin, setFin] = useState<Finances>({
+    householdSize: 1, monthlyIncome: 0, incomeSources: "", benefits: [], monthlyExpenses: 0, property: "", debts: "",
+    helper: { name: "", address: "", relationship: "" },
+  });
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("doc") === "pauper") {
+      setTab(3);
+      setMake("pauper");
+    }
+  }, []);
   const [served, setServed] = useState("");
   const [questions, setQuestions] = useState<DiscoveryItem[]>([{ question: "", answer: "" }]);
   const [target, setTarget] = useState({ name: "", address: "", wanted: "" });
@@ -391,6 +403,63 @@ export function CaseFile() {
                   <input className={input} value={target.wanted} onChange={(e) => setTarget({ ...target, wanted: e.target.value })} /></label>
               )}
             </div>
+          )}
+          {make === "pauper" && (
+            <>
+              <div className="no-print flex flex-col gap-3">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  If you have low or no income, a judge can let you go forward without paying costs up front. This
+                  makes the motion, your affidavit, the second person&apos;s affidavit and the order for the judge to
+                  sign. Your answers stay in this browser.
+                </p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <label className={label}>People in your household
+                    <input type="number" min={1} className={input} value={fin.householdSize}
+                      onChange={(e) => setFin({ ...fin, householdSize: Number(e.target.value) })} /></label>
+                  <label className={label}>Household income per month (before taxes)
+                    <input type="number" min={0} className={input} value={fin.monthlyIncome}
+                      onChange={(e) => setFin({ ...fin, monthlyIncome: Number(e.target.value) })} /></label>
+                  <label className={label}>Necessary expenses per month
+                    <input type="number" min={0} className={input} value={fin.monthlyExpenses}
+                      onChange={(e) => setFin({ ...fin, monthlyExpenses: Number(e.target.value) })} /></label>
+                </div>
+                <label className={label}>Where the income comes from
+                  <input className={input} placeholder="e.g. part-time job, Social Security disability, none"
+                    value={fin.incomeSources} onChange={(e) => setFin({ ...fin, incomeSources: e.target.value })} /></label>
+                <fieldset className="flex flex-col gap-1.5 text-sm">
+                  <legend className="pb-1 font-semibold">Benefits you get</legend>
+                  {benefitOptions.map((b) => (
+                    <label key={b} className="flex items-center gap-2">
+                      <input type="checkbox" checked={fin.benefits.includes(b)}
+                        onChange={(e) => setFin({ ...fin, benefits: e.target.checked ? [...fin.benefits, b] : fin.benefits.filter((x) => x !== b) })} />
+                      {b}
+                    </label>
+                  ))}
+                </fieldset>
+                <label className={label}>Property you own and its value
+                  <input className={input} placeholder="e.g. 2012 car worth $3,000; $150 in checking"
+                    value={fin.property} onChange={(e) => setFin({ ...fin, property: e.target.value })} /></label>
+                <label className={label}>Debts
+                  <input className={input} value={fin.debts} onChange={(e) => setFin({ ...fin, debts: e.target.value })} /></label>
+                <strong className="pt-2 text-sm">Someone who knows your finances (not your lawyer)</strong>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {(["name", "address", "relationship"] as const).map((k) => (
+                    <label key={k} className={label}>{k === "relationship" ? "How they know you" : `Their ${k}`}
+                      <input className={input} value={fin.helper[k]}
+                        onChange={(e) => setFin({ ...fin, helper: { ...fin.helper, [k]: e.target.value } })} /></label>
+                  ))}
+                </div>
+                <ul className="flex flex-col gap-2 text-sm">
+                  {pack.pauper.sections[0].items.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}
+                </ul>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  File it with the clerk of the district court in a parish where your claim could be filed. If the
+                  case has no number yet, leave it blank; the clerk assigns one. For the panel fee, the signed order must
+                  reach the Fund within 45 days of the confirmation letter.
+                </p>
+              </div>
+              <DocumentView doc={pauperApplication(facts, fin)} />
+            </>
           )}
           {make === "records" && <DocumentView doc={recordsRequest(facts, target.name, target.address, today)} />}
           {make === "subpoena" && (

@@ -33,6 +33,27 @@ function Box({ tone, children }: { tone: "ok" | "warn" | "bad" | "plain"; childr
   return <div className={`flex flex-col gap-1.5 rounded-lg p-4 text-sm ${bg}`}>{children}</div>;
 }
 
+function PauperBox() {
+  return (
+    <Box tone="ok">
+      <strong>Low or no income? Ask for pauper status (in forma pauperis).</strong>
+      <span>A judge&apos;s order lets you go forward without paying costs up front. It covers the panel fee, your
+        share of the panel&apos;s costs, and court costs.</span>
+      {pack.pauper.sections.map((sec) => (
+        <div key={sec.heading} className="flex flex-col gap-1 pt-1">
+          <strong>{sec.heading}</strong>
+          <ul className="list-disc pl-5">{sec.items.map((n) => <li key={n.text}>{n.text} <Cite c={n.citation} /></li>)}</ul>
+        </div>
+      ))}
+      <strong className="pt-1">How to apply</strong>
+      <ol className="list-decimal pl-5">{pack.pauper.steps.map((s) => <li key={s}>{s}</li>)}</ol>
+      <a className="self-start font-semibold underline" href="/medical-malpractice/case-file?doc=pauper">
+        Make your pauper application in the case file
+      </a>
+    </Box>
+  );
+}
+
 export function MalpracticeGuide() {
   const today = toIso(new Date());
   const [step, setStep] = useState(0);
@@ -198,6 +219,14 @@ export function MalpracticeGuide() {
                 Filing it with any other agency doesn&apos;t count.
               </span>
               <Cite c={p.suspensionCitation} />
+            </Box>
+            <Box tone="plain">
+              <span>
+                <strong>Can&apos;t afford the costs?</strong> With low or no income you can ask a judge for pauper
+                status (in forma pauperis). It covers the panel fee, your share of panel costs and court costs. Step 5
+                explains it, and the case file makes the application.
+              </span>
+              <Cite c={pack.pauper.sections[0].items[0].citation} />
             </Box>
           </>
         )}
@@ -397,6 +426,7 @@ export function MalpracticeGuide() {
               <ul className="list-disc pl-5">{p.feeWaivers.map((w) => <li key={w.text}>{w.text} <Cite c={w.citation} /></li>)}</ul>
               <Cite c={p.feeCitation} />
             </Box>
+            <PauperBox />
             <Box tone="plain">
               <strong>How the panel works</strong>
               <span>
